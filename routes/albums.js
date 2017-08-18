@@ -6,6 +6,7 @@ const knex = require('../knex.js');
 
 
 router.get('/:id', (req, res, next) => {
+  console.log(req.params);
   let id = req.params.id
   knex('albums')
     .where('albums.id', id)
@@ -17,12 +18,18 @@ router.get('/:id', (req, res, next) => {
     })
 })
 
-
-const getUserCats = (userId) => {
-    return knex('user_category')
-        .join('categories', 'categories.id', 'user_category.category_id')
-        .where('user_category.user_id', userId)
-}
+router.get('/album/:name', (req, res, next) => {
+  console.log(req.params.name);
+  let name = req.params.name
+  knex('albums')
+    .where('albums.albumName', name)
+    .join('artists', 'albums.artist_id', 'artists.id' )
+    .join('genres', 'albums.genre_id', 'genres.id' )
+    .select('albums.albumName', 'artists.artistName', 'genres.genreName', 'albums.year')
+    .then((selectedAlbum) => {
+      res.send(selectedAlbum)
+    })
+})
 
 
 module.exports = router;
