@@ -5,11 +5,24 @@ const knex = require('../knex.js');
 /* GET home page. */
 
 
-router.get('/artists', (req, res, next) => {
+router.get('/allArtists', (req, res, next) => {
   knex('artists')
     .select('artistName')
     .then((allArtists) => {
       res.send(allArtists)
+    })
+})
+
+
+router.get('/artistAlbums/:name', (req, res, next) => {
+  console.log(req.params.name);
+  let name = req.params.name
+  knex('artists')
+    .where('artists.artistName', name)
+    .join('albums', 'albums.artist_id', 'artists.id' )
+    .select('albums.albumName')
+    .then((artistAlbums) => {
+      res.send(artistAlbums)
     })
 })
 
@@ -37,6 +50,18 @@ router.get('/album/:name', (req, res, next) => {
     .select('albums.albumName', 'artists.artistName', 'genres.genreName', 'albums.year')
     .then((selectedAlbum) => {
       res.send(selectedAlbum)
+    })
+})
+
+router.get('/artistAlbums/:name', (req, res, next) => {
+  console.log(req.params.name);
+  let name = req.params.name
+  knex('artists')
+    .where('artists.artistName', name)
+    .join('albums', 'albums.artist_id', 'artists.id' )
+    .select('albums.albumName')
+    .then((artistAlbums) => {
+      res.send(artistAlbums)
     })
 })
 
