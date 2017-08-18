@@ -48,25 +48,31 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
   let year = req.params.year
 
   let pAlbums = knex('albums')
-  .where('albumName', albumName)
-  .then((artistNameFromKnex) => {
-    if (artistNameFromKnex.length !== 0) {
-      res.sendStatus(403)
-    }
-  })
+    .where('albumName', albumName)
+    .then((albumNameFromKnex) => {
+      if (albumNameFromKnex.length !== 0) {
+         return albumNameFromKnex[0].albumName
+      } else {
+        return albumName
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    })
 
   let pArtists = knex('artists')
     .where('artistName', artistName)
     .then((artistNameFromKnex) => {
       if (artistNameFromKnex.length !== 0) {
-        artistName = artistNameFromKnex[0].id
+         return artistNameFromKnex[0].id
       } else {
         console.log('else');
         knex('artists')
           .insert({artistName: artistName})
           .returning('id')
           .then((newArtist) => {
-            artistName = newArtist[0]
+            console.log('artist now');
+            return newArtist[0]
         })
       }
     })
@@ -75,36 +81,47 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
     .where('genreName', genreName)
     .then((genreNameFromKnex) => {
       if (genreNameFromKnex.length !== 0) {
-          console.log('if');
-          genreName = genreNameFromKnex[0].id
+          return genreNameFromKnex[0].id
         } else {
-          console.log('else');
           knex('genres')
             .insert({genreName: genreName})
             .returning('id')
             .then((newGenre) => {
-              genreName = newGenre[0]
-              console.log('newGenre', newGenre[0]);
+              console.log('genre now');
+
+              return newGenre[0]
             })
         }
       })
 
 
 
-  let pNewAlbum = knex('albums')
+  function pNewAlbum(dataArr) {
+    console.log('pNewAlbums');
+    knex('albums')
     .returning('id')
     .insert({
-      albumName: albumName,
-      artist_id: artistName,
-      genre_id: genreName,
+      albumName: dataArr[0],
+      artist_id: dataArr[1],
+      genre_id: dataArr[2],
       year: year
     })
+    .then((newAl) => {
+      console.log("newAl", newAl);
+    })
+    return "successful new album"
+  }
 
-
-  Promise.all([pAlbums, pArtists, pGenres, pNewAlbum])
+  Promise.all([pAlbums, pArtists, pGenres])
   .then((result) => {
     console.log('result', result);
-    res.send('successful new album')
+    pNewAlbum(result)
+  })
+  .then((result2) => {
+    console.log(result2)
+  })
+  .catch((err) => {
+    console.log(err);
   })
 
 })
