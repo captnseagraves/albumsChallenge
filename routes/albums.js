@@ -72,7 +72,8 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
   let genreName = req.params.genreName
   let year = req.params.year
 
-  let pAlbums = knex('albums')
+  function pAlbums() {
+    return knex('albums')
     .where('albumName', albumName)
     .then((albumNameFromKnex) => {
       if (albumNameFromKnex.length !== 0) {
@@ -84,15 +85,17 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
     .catch((err) => {
       console.log(err);
     })
+  }
 
-  let pArtists = knex('artists')
+  function pArtists() {
+    return knex('artists')
     .where('artistName', artistName)
     .then((artistNameFromKnex) => {
       if (artistNameFromKnex.length !== 0) {
          return artistNameFromKnex[0].id
       } else {
         console.log('else');
-        knex('artists')
+        return knex('artists')
           .insert({artistName: artistName})
           .returning('id')
           .then((newArtist) => {
@@ -101,14 +104,16 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
         })
       }
     })
+  }
 
-  let pGenres = knex('genres')
+  function pGenres() {
+    return knex('genres')
     .where('genreName', genreName)
     .then((genreNameFromKnex) => {
       if (genreNameFromKnex.length !== 0) {
           return genreNameFromKnex[0].id
         } else {
-          knex('genres')
+          return knex('genres')
             .insert({genreName: genreName})
             .returning('id')
             .then((newGenre) => {
@@ -118,7 +123,7 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
             })
         }
       })
-
+    }
 
 
   function pNewAlbum(dataArr) {
@@ -134,20 +139,32 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
     .then((newAl) => {
       console.log("newAl", newAl);
     })
+    .catch((err) => {
+      console.log(err);
+    })
     return "successful new album"
   }
 
-  Promise.all([pAlbums, pArtists, pGenres])
-  .then((result) => {
-    console.log('result', result);
-    pNewAlbum(result)
+function createAlbum() {
+  return Promise.all([
+    pAlbums(),
+    pArtists(),
+    pGenres()
+  ])
+  .then((results) => {
+    console.log('result', results);
+    return pNewAlbum(results)
   })
-  .then((result2) => {
-    console.log(result2)
+  .then((result) => {
+    console.log('result2', result)
   })
   .catch((err) => {
-    console.log(err);
+    // still logs whole error, rather than just notice
+    console.log("Album already exists");
   })
+}
+
+createAlbum()
 
 })
 
