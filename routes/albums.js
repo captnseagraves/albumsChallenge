@@ -5,6 +5,14 @@ const knex = require('../knex.js');
 /* GET home page. */
 
 
+router.get('/artists', (req, res, next) => {
+  knex('artists')
+    .select('artistName')
+    .then((allArtists) => {
+      res.send(allArtists)
+    })
+})
+
 router.get('/:id', (req, res, next) => {
   console.log(req.params);
   let id = req.params.id
@@ -30,6 +38,8 @@ router.get('/album/:name', (req, res, next) => {
       res.send(selectedAlbum)
     })
 })
+
+
 
 
 module.exports = router;
