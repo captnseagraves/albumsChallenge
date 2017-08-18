@@ -27,5 +27,8 @@ exports.seed = function(knex, Promise) {
         year: 1969
        },
       ]);
-    });
+    })
+    .then(() => {
+          return knex.raw("SELECT setval('albums_id_seq', (SELECT MAX(id) FROM albums));")
+      })
 };

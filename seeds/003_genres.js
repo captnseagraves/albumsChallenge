@@ -9,5 +9,8 @@ exports.seed = function(knex, Promise) {
         {id: 2, genreName: 'Hard Rock'},
         {id: 3, genreName: 'Psych Rock'}
       ]);
-    });
+    })
+    .then(() => {
+          return knex.raw("SELECT setval('genres_id_seq', (SELECT MAX(id) FROM genres));")
+      })
 };

@@ -9,5 +9,8 @@ exports.seed = function(knex, Promise) {
         {id: 2, artistName: 'Led Zeppelin'},
         {id: 3, artistName: 'The Beatles'}
       ]);
-    });
+    })
+    .then(() => {
+          return knex.raw("SELECT setval('artists_id_seq', (SELECT MAX(id) FROM artists));")
+      })
 };
