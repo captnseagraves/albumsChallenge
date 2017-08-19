@@ -284,6 +284,24 @@ router.patch('/changeAlbumGenre/:albumName/:newGenreName', function(req, res, ne
   changeGenre()
 })
 
+router.patch('/changeAlbumYear/:albumName/:newAlbumYear', function(req, res, next) {
+  let albumName = req.params.albumName
+  let newAlbumYear = req.params.newAlbumYear
+  knex('albums')
+  .where('albumName', albumName)
+  .update('year', newAlbumYear)
+  .then((changedName) => {
+    if (changedName === 0) {
+      res.send('Album doesn\'t exist. Please, enter valid title.')
+    } else {
+      console.log('changedName', changedName);
+      res.send('Album year changed')
+    }
+  })
+  .catch((err) => {
+    console.log('err', err);
+  })
+})
 
 
 
