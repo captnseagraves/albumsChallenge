@@ -77,7 +77,7 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
     .where('albumName', albumName)
     .then((albumNameFromKnex) => {
       if (albumNameFromKnex.length !== 0) {
-         return albumNameFromKnex[0].albumName
+        return albumNameFromKnex[0].albumName
       } else {
         return albumName
       }
@@ -190,22 +190,53 @@ router.patch('/changeAlbumName/:albumName/:newAlbumName', function(req, res, nex
 
 router.patch('/changeAlbumArtist/:albumName/:newArtistName', function(req, res, next) {
   let albumName = req.params.albumName
-  let newAlbumName = req.params.newAlbumName
-  knex('albums')
-  .where('albumName', albumName)
-  .update('albumName', newAlbumName)
-  .then((changedName) => {
-    if (changedName === 0) {
-      res.send('Album doesn\'t exist. Please, enter valid title.')
-    } else {
-      console.log('changedName', changedName);
-      res.send('Album named changed')
-    }
-  })
-  .catch((err) => {
-    console.log('err', err);
-  })
+  let newArtistName = req.params.newArtistName
+
+  function pArtists() {
+    return knex('artists')
+    .where('artistName', newArtistName)
+    .then((artistNameFromKnex) => {
+      if (artistNameFromKnex.length !== 0) {
+         return artistNameFromKnex[0].id
+      } else {
+        console.log('else');
+        return knex('artists')
+          .insert({artistName: newArtistName})
+          .returning('id')
+          .then((newArtist) => {
+            console.log('artist now');
+            return newArtist[0]
+        })
+      }
+    })
+  }
+
+// need to check if artist exists in other entries and delete name in artist table or not. 
+
+  function changeArtist() {
+    return Promise.all([
+      pArtists()
+    ])
+    .then((artist_id) => {
+      console.log('artist-id', artist_id[0]);
+      return knex('albums')
+      .where('albumName', albumName)
+      .update('artist_id', artist_id[0])
+    })
+    .then((changedID) => {
+        console.log('changedID', changedID);
+        res.send('Artist named changed')
+    })
+    .catch((err) => {
+      console.log('err', err);
+    })
+
+  }
+
+  changeArtist()
 })
+
+
 
 
 
