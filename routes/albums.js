@@ -140,7 +140,8 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
       console.log("newAl", newAl);
     })
     .catch((err) => {
-      console.log(err);
+      console.log('Album already exists');
+      // if duplicate, errors out, but increases albums table id
     })
     return "successful new album"
   }
@@ -155,8 +156,8 @@ function createAlbum() {
     console.log('result', results);
     return pNewAlbum(results)
   })
-  .then((result) => {
-    console.log('result2', result)
+  .then((newAlbumResult) => {
+    res.send(newAlbumResult)
   })
   .catch((err) => {
     // still logs whole error, rather than just notice
@@ -166,6 +167,44 @@ function createAlbum() {
 
 createAlbum()
 
+})
+
+router.patch('/changeAlbumName/:albumName/:newAlbumName', function(req, res, next) {
+  let albumName = req.params.albumName
+  let newAlbumName = req.params.newAlbumName
+  knex('albums')
+  .where('albumName', albumName)
+  .update('albumName', newAlbumName)
+  .then((changedName) => {
+    if (changedName === 0) {
+      res.send('Album doesn\'t exist. Please, enter valid title.')
+    } else {
+      console.log('changedName', changedName);
+      res.send('Album named changed')
+    }
+  })
+  .catch((err) => {
+    console.log('err', err);
+  })
+})
+
+router.patch('/changeAlbumArtist/:albumName/:newArtistName', function(req, res, next) {
+  let albumName = req.params.albumName
+  let newAlbumName = req.params.newAlbumName
+  knex('albums')
+  .where('albumName', albumName)
+  .update('albumName', newAlbumName)
+  .then((changedName) => {
+    if (changedName === 0) {
+      res.send('Album doesn\'t exist. Please, enter valid title.')
+    } else {
+      console.log('changedName', changedName);
+      res.send('Album named changed')
+    }
+  })
+  .catch((err) => {
+    console.log('err', err);
+  })
 })
 
 
