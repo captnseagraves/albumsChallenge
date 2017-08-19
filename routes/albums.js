@@ -211,7 +211,7 @@ router.patch('/changeAlbumArtist/:albumName/:newArtistName', function(req, res, 
     })
   }
 
-// need to check if artist exists in other entries and delete name in artist table or not. 
+// need to check if artist exists in other entries and delete name in artist table or not.
 
   function changeArtist() {
     return Promise.all([
@@ -236,6 +236,53 @@ router.patch('/changeAlbumArtist/:albumName/:newArtistName', function(req, res, 
   changeArtist()
 })
 
+router.patch('/changeAlbumGenre/:albumName/:newGenreName', function(req, res, next) {
+  let albumName = req.params.albumName
+  let newGenreName = req.params.newGenreName
+
+  function pGenres() {
+    return knex('genres')
+    .where('genreName', newGenreName)
+    .then((genreNameFromKnex) => {
+      if (genreNameFromKnex.length !== 0) {
+         return genreNameFromKnex[0].id
+      } else {
+        console.log('else');
+        return knex('genres')
+          .insert({genreName: newGenreName})
+          .returning('id')
+          .then((newGenre) => {
+            console.log('genre now');
+            return newGenre[0]
+        })
+      }
+    })
+  }
+
+// need to check if genre exists in other entries and delete name in genre table or not.
+
+  function changeGenre() {
+    return Promise.all([
+      pGenres()
+    ])
+    .then((genre_id) => {
+      console.log('genre-id', genre_id[0]);
+      return knex('albums')
+      .where('albumName', albumName)
+      .update('genre_id', genre_id[0])
+    })
+    .then((changedID) => {
+        console.log('changedID', changedID);
+        res.send('Genre named changed')
+    })
+    .catch((err) => {
+      console.log('err', err);
+    })
+
+  }
+
+  changeGenre()
+})
 
 
 
