@@ -303,6 +303,17 @@ router.patch('/changeAlbumYear/:albumName/:newAlbumYear', function(req, res, nex
   })
 })
 
+router.delete('/deleteAlbum/:albumName', function(req, res, next) {
+  let albumName = req.params.albumName
+  knex('albums')
+    .where('albumName', albumName)
+    .del()
+    .then((deletedID) => {
+      console.log('deletedID', deletedID);
+      res.send('Album successfully Deleted')
+    })
+});
+
 
 
 module.exports = router;
