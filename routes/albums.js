@@ -40,6 +40,7 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
   let genreName = req.params.genreName
   let year = req.params.year
 
+//Inserts new Album into albums table
   const pNewAlbum = (dataArr) => {
     return knex('albums')
     .returning('id')
@@ -174,6 +175,7 @@ router.delete('/deleteAlbum/:albumName', function(req, res, next) {
     })
 });
 
+//Checks if album name already exists.
 const pAlbums = (albumName) => {
    return knex('albums')
    .where('albumName', albumName)
@@ -189,6 +191,7 @@ const pAlbums = (albumName) => {
    })
  }
 
+//Checks if artist name already exists. Creates artist in artists table if does not exists.
 const pArtists = (artistName) => {
    return knex('artists')
    .where('artistName', artistName)
@@ -206,6 +209,7 @@ const pArtists = (artistName) => {
    })
  }
 
+ //Checks if genre name already exists. Creates genre in genres table if does not exists.
  const pGenres = (genreName) => {
      return knex('genres')
      .where('genreName', genreName)
