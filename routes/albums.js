@@ -13,7 +13,6 @@ router.get('/allArtists', (req, res, next) => {
     })
 })
 
-
 router.get('/allArtistAlbums/:artistName', (req, res, next) => {
   let artistName = req.params.artistName
   knex('artists')
@@ -37,64 +36,13 @@ router.get('/album/:albumName', (req, res, next) => {
     })
 })
 
-
 router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next) => {
   let albumName = req.params.albumName
   let artistName = req.params.artistName
   let genreName = req.params.genreName
   let year = req.params.year
 
-  function pAlbums() {
-    return knex('albums')
-    .where('albumName', albumName)
-    .then((albumNameFromKnex) => {
-      if (albumNameFromKnex.length !== 0) {
-        return albumNameFromKnex[0].albumName
-      } else {
-        return albumName
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    })
-  }
-
-  function pArtists() {
-    return knex('artists')
-    .where('artistName', artistName)
-    .then((artistNameFromKnex) => {
-      if (artistNameFromKnex.length !== 0) {
-         return artistNameFromKnex[0].id
-      } else {
-        return knex('artists')
-          .insert({artistName: artistName})
-          .returning('id')
-          .then((newArtist) => {
-            return newArtist[0]
-        })
-      }
-    })
-  }
-
-  function pGenres() {
-    return knex('genres')
-    .where('genreName', genreName)
-    .then((genreNameFromKnex) => {
-      if (genreNameFromKnex.length !== 0) {
-          return genreNameFromKnex[0].id
-        } else {
-          return knex('genres')
-            .insert({genreName: genreName})
-            .returning('id')
-            .then((newGenre) => {
-              return newGenre[0]
-            })
-        }
-      })
-    }
-
-
-  function pNewAlbum(dataArr) {
+  const pNewAlbum = (dataArr) => {
     return knex('albums')
     .returning('id')
     .insert({
@@ -115,22 +63,19 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
     })
   }
 
-function createAlbum() {
-  return Promise.all([
-    pAlbums(),
-    pArtists(),
-    pGenres()
-  ])
-  .then((results) => {
-    return pNewAlbum(results)
-  })
-}
+  const createAlbum = () => {
+    return Promise.all([
+      pAlbums(albumName),
+      pArtists(artistName),
+      pGenres(genreName)
+    ])
+    .then((results) => {
+      return pNewAlbum(results)
+    })
+  }
 
-createAlbum()
-
+  createAlbum()
 })
-
-// need to write case for changing name to album that already exists
 
 router.patch('/changeAlbumName/:albumName/:newAlbumName', function(req, res, next) {
   let albumName = req.params.albumName
@@ -155,28 +100,9 @@ router.patch('/changeAlbumArtist/:albumName/:newArtistName', function(req, res, 
   let albumName = req.params.albumName
   let newArtistName = req.params.newArtistName
 
-  function pArtists() {
-    return knex('artists')
-    .where('artistName', newArtistName)
-    .then((artistNameFromKnex) => {
-      if (artistNameFromKnex.length !== 0) {
-         return artistNameFromKnex[0].id
-      } else {
-        return knex('artists')
-          .insert({artistName: newArtistName})
-          .returning('id')
-          .then((newArtist) => {
-            return newArtist[0]
-        })
-      }
-    })
-  }
-
-// need to check if artist exists in other entries and delete name in artist table or not.
-
-  function changeArtist() {
+  const changeArtist = () => {
     return Promise.all([
-      pArtists()
+      pArtists(newArtistName)
     ])
     .then((artist_id) => {
       return knex('albums')
@@ -184,12 +110,11 @@ router.patch('/changeAlbumArtist/:albumName/:newArtistName', function(req, res, 
       .update('artist_id', artist_id[0])
     })
     .then((changedID) => {
-        res.send('Successfully changed artist name')
+      res.send('Successfully changed artist name')
     })
     .catch((err) => {
       console.log('err', err);
     })
-
   }
 
   changeArtist()
@@ -199,28 +124,9 @@ router.patch('/changeAlbumGenre/:albumName/:newGenreName', function(req, res, ne
   let albumName = req.params.albumName
   let newGenreName = req.params.newGenreName
 
-  function pGenres() {
-    return knex('genres')
-    .where('genreName', newGenreName)
-    .then((genreNameFromKnex) => {
-      if (genreNameFromKnex.length !== 0) {
-         return genreNameFromKnex[0].id
-      } else {
-        return knex('genres')
-          .insert({genreName: newGenreName})
-          .returning('id')
-          .then((newGenre) => {
-            return newGenre[0]
-        })
-      }
-    })
-  }
-
-// need to check if genre exists in other entries and delete name in genre table or not.
-
   function changeGenre() {
     return Promise.all([
-      pGenres()
+      pGenres(newGenreName)
     ])
     .then((genre_id) => {
       return knex('albums')
@@ -228,12 +134,11 @@ router.patch('/changeAlbumGenre/:albumName/:newGenreName', function(req, res, ne
       .update('genre_id', genre_id[0])
     })
     .then((changedID) => {
-        res.send('Successfully changed genre name')
+      res.send('Successfully changed genre name')
     })
     .catch((err) => {
       console.log('err', err);
     })
-
   }
 
   changeGenre()
@@ -272,6 +177,53 @@ router.delete('/deleteAlbum/:albumName', function(req, res, next) {
     })
 });
 
+const pAlbums = (albumName) => {
+   return knex('albums')
+   .where('albumName', albumName)
+   .then((albumNameFromKnex) => {
+     if (albumNameFromKnex.length !== 0) {
+       return albumNameFromKnex[0].albumName
+     } else {
+       return albumName
+     }
+   })
+   .catch((err) => {
+     console.log(err);
+   })
+ }
 
+const pArtists = (artistName) => {
+   return knex('artists')
+   .where('artistName', artistName)
+   .then((artistNameFromKnex) => {
+     if (artistNameFromKnex.length !== 0) {
+       return artistNameFromKnex[0].id
+     } else {
+       return knex('artists')
+         .insert({artistName: artistName})
+         .returning('id')
+         .then((newArtist) => {
+           return newArtist[0]
+       })
+     }
+   })
+ }
+
+ const pGenres = (genreName) => {
+     return knex('genres')
+     .where('genreName', genreName)
+     .then((genreNameFromKnex) => {
+       if (genreNameFromKnex.length !== 0) {
+           return genreNameFromKnex[0].id
+         } else {
+           return knex('genres')
+             .insert({genreName: genreName})
+             .returning('id')
+             .then((newGenre) => {
+               return newGenre[0]
+             })
+         }
+       })
+     }
 
 module.exports = router;
