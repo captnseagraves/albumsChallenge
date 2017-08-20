@@ -104,6 +104,7 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
       year: year
     })
     .then((newAl) => {
+      res.send("Successfully created new album")
       return "Successfully created new album"
     })
     .catch((err) => {
@@ -122,9 +123,6 @@ function createAlbum() {
   ])
   .then((results) => {
     return pNewAlbum(results)
-  })
-  .then((newAlbumResult) => {
-    res.send(newAlbumResult)
   })
 }
 
