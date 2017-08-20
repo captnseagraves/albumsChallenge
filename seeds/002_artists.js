@@ -1,3 +1,5 @@
+let albums = require('../albums.json')
+
 
 exports.seed = function(knex, Promise) {
   // Deletes ALL existing entries

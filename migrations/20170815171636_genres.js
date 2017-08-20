@@ -1,7 +1,7 @@
 exports.up = function(knex) {
   return knex.schema.createTable('genres', (tbl) => {
     tbl.increments();
-    tbl.string('genreName').notNullable().unique()
+    tbl.string('genreName').notNullable()
   });
 };
 
