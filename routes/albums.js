@@ -2,8 +2,6 @@ var express = require('express');
 var router = express.Router();
 const knex = require('../knex.js');
 
-/* GET home page. */
-
 
 router.get('/allArtists', (req, res, next) => {
   knex('artists')
@@ -59,7 +57,6 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
       res.status(400)
       .send('Album already exists')
       return 'Album already exists'
-      // if duplicate, errors out, but increases albums table id
     })
   }
 
