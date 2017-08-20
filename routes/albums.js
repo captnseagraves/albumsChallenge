@@ -39,7 +39,6 @@ router.get('/album/:albumName', (req, res, next) => {
 
 
 router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next) => {
-  console.log(req.params);
   let albumName = req.params.albumName
   let artistName = req.params.artistName
   let genreName = req.params.genreName
@@ -67,12 +66,10 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
       if (artistNameFromKnex.length !== 0) {
          return artistNameFromKnex[0].id
       } else {
-        console.log('else');
         return knex('artists')
           .insert({artistName: artistName})
           .returning('id')
           .then((newArtist) => {
-            console.log('artist now');
             return newArtist[0]
         })
       }
@@ -90,8 +87,6 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
             .insert({genreName: genreName})
             .returning('id')
             .then((newGenre) => {
-              console.log('genre now');
-
               return newGenre[0]
             })
         }
@@ -100,7 +95,6 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
 
 
   function pNewAlbum(dataArr) {
-    console.log('pNewAlbums');
     return knex('albums')
     .returning('id')
     .insert({
@@ -110,11 +104,9 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
       year: year
     })
     .then((newAl) => {
-      console.log("newAl", newAl);
       return "Successfully created new album"
     })
     .catch((err) => {
-      console.log('Album already exists');
       res.status(400)
       .send('Album already exists')
       return 'Album already exists'
@@ -129,7 +121,6 @@ function createAlbum() {
     pGenres()
   ])
   .then((results) => {
-    console.log('result', results);
     return pNewAlbum(results)
   })
   .then((newAlbumResult) => {
@@ -154,8 +145,7 @@ router.patch('/changeAlbumName/:albumName/:newAlbumName', function(req, res, nex
       res.status(400)
       .send('Album doesn\'t exist. Please, enter valid title.')
     } else {
-      console.log('changedName', changedName);
-      res.send('Successfully change album name')
+      res.send('Successfully changed album name')
     }
   })
   .catch((err) => {
@@ -174,12 +164,10 @@ router.patch('/changeAlbumArtist/:albumName/:newArtistName', function(req, res, 
       if (artistNameFromKnex.length !== 0) {
          return artistNameFromKnex[0].id
       } else {
-        console.log('else');
         return knex('artists')
           .insert({artistName: newArtistName})
           .returning('id')
           .then((newArtist) => {
-            console.log('artist now');
             return newArtist[0]
         })
       }
@@ -193,14 +181,12 @@ router.patch('/changeAlbumArtist/:albumName/:newArtistName', function(req, res, 
       pArtists()
     ])
     .then((artist_id) => {
-      console.log('artist-id', artist_id[0]);
       return knex('albums')
       .where('albumName', albumName)
       .update('artist_id', artist_id[0])
     })
     .then((changedID) => {
-        console.log('changedID', changedID);
-        res.send('Artist named changed')
+        res.send('Successfully changed artist name')
     })
     .catch((err) => {
       console.log('err', err);
@@ -222,12 +208,10 @@ router.patch('/changeAlbumGenre/:albumName/:newGenreName', function(req, res, ne
       if (genreNameFromKnex.length !== 0) {
          return genreNameFromKnex[0].id
       } else {
-        console.log('else');
         return knex('genres')
           .insert({genreName: newGenreName})
           .returning('id')
           .then((newGenre) => {
-            console.log('genre now');
             return newGenre[0]
         })
       }
@@ -241,14 +225,12 @@ router.patch('/changeAlbumGenre/:albumName/:newGenreName', function(req, res, ne
       pGenres()
     ])
     .then((genre_id) => {
-      console.log('genre-id', genre_id[0]);
       return knex('albums')
       .where('albumName', albumName)
       .update('genre_id', genre_id[0])
     })
     .then((changedID) => {
-        console.log('changedID', changedID);
-        res.send('Genre named changed')
+        res.send('Successfully changed genre name')
     })
     .catch((err) => {
       console.log('err', err);
@@ -269,8 +251,7 @@ router.patch('/changeAlbumYear/:albumName/:newAlbumYear', function(req, res, nex
     if (changedName === 0) {
       res.send('Album doesn\'t exist. Please, enter valid title.')
     } else {
-      console.log('changedName', changedName);
-      res.send('Album year changed')
+      res.send('Successfully changed album year')
     }
   })
   .catch((err) => {
@@ -284,8 +265,12 @@ router.delete('/deleteAlbum/:albumName', function(req, res, next) {
     .where('albumName', albumName)
     .del()
     .then((deletedID) => {
-      console.log('deletedID', deletedID);
-      res.send('Album successfully Deleted')
+      if (deletedID === 0) {
+        res.status(400)
+        .send('Album doesn\'t exist. Please, enter valid title.')
+      } else {
+        res.send('Successfully deleted album')
+      }
     })
 });
 
