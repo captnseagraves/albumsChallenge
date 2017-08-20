@@ -14,11 +14,10 @@ router.get('/allArtists', (req, res, next) => {
 })
 
 
-router.get('/artistAlbums/:name', (req, res, next) => {
-  console.log(req.params.name);
-  let name = req.params.name
+router.get('/allArtistAlbums/:artistName', (req, res, next) => {
+  let artistName = req.params.artistName
   knex('artists')
-    .where('artists.artistName', name)
+    .where('artists.artistName', artistName)
     .join('albums', 'albums.artist_id', 'artists.id' )
     .select('albums.albumName')
     .then((artistAlbums) => {
@@ -26,11 +25,10 @@ router.get('/artistAlbums/:name', (req, res, next) => {
     })
 })
 
-router.get('/:id', (req, res, next) => {
-  console.log(req.params);
-  let id = req.params.id
+router.get('/album/:albumName', (req, res, next) => {
+  let albumName = req.params.albumName
   knex('albums')
-    .where('albums.id', id)
+    .where('albums.albumName', albumName)
     .join('artists', 'albums.artist_id', 'artists.id' )
     .join('genres', 'albums.genre_id', 'genres.id' )
     .select('albums.albumName', 'artists.artistName', 'genres.genreName', 'albums.year')
@@ -39,31 +37,6 @@ router.get('/:id', (req, res, next) => {
     })
 })
 
-router.get('/album/:name', (req, res, next) => {
-  console.log(req.params.name);
-  console.log(req.params.year);
-  let name = req.params.name
-  knex('albums')
-    .where('albums.albumName', name)
-    .join('artists', 'albums.artist_id', 'artists.id' )
-    .join('genres', 'albums.genre_id', 'genres.id' )
-    .select('albums.albumName', 'artists.artistName', 'genres.genreName', 'albums.year')
-    .then((selectedAlbum) => {
-      res.send(selectedAlbum)
-    })
-})
-
-router.get('/artistAlbums/:name', (req, res, next) => {
-  console.log(req.params.name);
-  let name = req.params.name
-  knex('artists')
-    .where('artists.artistName', name)
-    .join('albums', 'albums.artist_id', 'artists.id' )
-    .select('albums.albumName')
-    .then((artistAlbums) => {
-      res.send(artistAlbums)
-    })
-})
 
 router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next) => {
   console.log(req.params);
@@ -128,7 +101,7 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
 
   function pNewAlbum(dataArr) {
     console.log('pNewAlbums');
-    knex('albums')
+    return knex('albums')
     .returning('id')
     .insert({
       albumName: dataArr[0],
@@ -138,12 +111,15 @@ router.post('/newAlbum/:albumName/:artistName/:genreName/:year', (req, res, next
     })
     .then((newAl) => {
       console.log("newAl", newAl);
+      return "Successfully created new album"
     })
     .catch((err) => {
       console.log('Album already exists');
+      res.status(400)
+      .send('Album already exists')
+      return 'Album already exists'
       // if duplicate, errors out, but increases albums table id
     })
-    return "successful new album"
   }
 
 function createAlbum() {
@@ -159,15 +135,13 @@ function createAlbum() {
   .then((newAlbumResult) => {
     res.send(newAlbumResult)
   })
-  .catch((err) => {
-    // still logs whole error, rather than just notice
-    console.log("Album already exists");
-  })
 }
 
 createAlbum()
 
 })
+
+// need to write case for changing name to album that already exists
 
 router.patch('/changeAlbumName/:albumName/:newAlbumName', function(req, res, next) {
   let albumName = req.params.albumName
@@ -177,10 +151,11 @@ router.patch('/changeAlbumName/:albumName/:newAlbumName', function(req, res, nex
   .update('albumName', newAlbumName)
   .then((changedName) => {
     if (changedName === 0) {
-      res.send('Album doesn\'t exist. Please, enter valid title.')
+      res.status(400)
+      .send('Album doesn\'t exist. Please, enter valid title.')
     } else {
       console.log('changedName', changedName);
-      res.send('Album named changed')
+      res.send('Successfully change album name')
     }
   })
   .catch((err) => {
