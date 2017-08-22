@@ -3,7 +3,7 @@
 module.exports = {
  development: {
    client: 'pg',
-   connection: 'postgres://localhost/albumChallenge'
+   connection: 'postgres://localhost/albumsChallenge'
  },
  production: {
     client: 'pg',
@@ -11,7 +11,7 @@ module.exports = {
   },
  test: {
    client: 'pg',
-   connection: 'postgres://localhost/albumChallenge_test',
+   connection: 'postgres://localhost/albumsChallenge_test',
     debug:false
  }
 }
