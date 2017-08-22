@@ -2,15 +2,20 @@ const knex = require('./knex.js')
 let albums = require('./albums.json')
 let routes = require('./routes/albums.js')
 
+console.log('albums.length', albums.length);
+
+let dataLength = albums.length
+let count = dataLength
+
 const dataMassage = () => {
-  albums.forEach((each) => {
-    let artistName = each.artist
-    let albumName = each.album
-    let genreName = each.genre
-    let year = each.year
+    let artistName = albums[count-1].artist
+    let albumName = albums[count-1].album
+    let genreName = albums[count-1].genre
+    let year = albums[count-1].year
 
     //Inserts new Album into albums table
     const pNewAlbum = (dataArr) => {
+      console.log('pNewAlbum');
     return knex('albums')
     .returning('id')
     .insert({
@@ -20,9 +25,11 @@ const dataMassage = () => {
       year: year
     })
     .then((newAl) => {
+      console.log('Successfully created new album');
       return "Successfully created new album"
     })
     .catch((err) => {
+      console.log('Album already exists');
       return 'Album already exists'
     })
   }
@@ -61,6 +68,7 @@ const dataMassage = () => {
    return knex('artists')
    .where('artistName', artistName)
    .then((artistNameFromKnex) => {
+     console.log('********artistNameFromKnex', artistNameFromKnex);
      if (artistNameFromKnex.length !== 0) {
        return artistNameFromKnex[0].id
      } else {
@@ -68,6 +76,7 @@ const dataMassage = () => {
          .insert({artistName: artistName})
          .returning('id')
          .then((newArtist) => {
+           console.log('newArtist', newArtist);
            return newArtist[0]
        })
      }
@@ -79,6 +88,7 @@ const dataMassage = () => {
      return knex('genres')
      .where('genreName', genreName)
      .then((genreNameFromKnex) => {
+       console.log('*********genreNameFromKnex', genreNameFromKnex);
        if (genreNameFromKnex.length !== 0) {
            return genreNameFromKnex[0].id
          } else {
@@ -86,15 +96,21 @@ const dataMassage = () => {
              .insert({genreName: genreName})
              .returning('id')
              .then((newGenre) => {
+               console.log('newGenre', newGenre);
                return newGenre[0]
              })
          }
        })
      }
 
+     createAlbum()
 
-      createAlbum()
-  })
+  if (count === 1) {
+    return
+  } else {
+    count--
+    dataMassage()
+  }
 }
 
 dataMassage()

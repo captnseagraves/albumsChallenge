@@ -1,7 +1,7 @@
 exports.up = function(knex) {
   return knex.schema.createTable('artists', (tbl) => {
     tbl.increments();
-    tbl.string('artistName').notNullable()
+    tbl.string('artistName').notNullable().unique()
   });
 };
 
